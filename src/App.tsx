@@ -1,35 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import { ItemInput } from "./components/ItemInput";
+import { ItemList } from "./components/ItemList";
+
+const WS_URL = import.meta.env.WEBSOCKET_URL;
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [items, setItems] = useState<string[]>([]);
+  const [ws, setWs] = useState<WebSocket | null>(null);
+
+  // Establish WebSocket connection
+  useEffect(() => {
+    const websocket = new WebSocket(WS_URL);
+
+    websocket.onopen = () => {
+      console.log("Connected to WebSocket");
+      websocket.send(JSON.stringify({ type: "join", userId: "user123" }));
+    };
+
+    websocket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      switch (message.type) {
+        case "item_added":
+          setItems((prev) => [...prev, message.item]);
+          break;
+        case "item_deleted":
+          setItems((prev) => prev.filter((item) => item !== message.item));
+          break;
+      }
+    };
+
+    websocket.onclose = () => console.log("WebSocket closed");
+
+    setWs(websocket);
+
+    return () => {
+      websocket.close();
+    };
+  }, []);
+
+  const handleAddItem = (item: string) => {
+    if (ws) {
+      ws.send(JSON.stringify({ type: "add_item", userId: "user123", item }));
+    }
+  };
+
+  const handleDeleteItem = (item: string) => {
+    if (ws) {
+      ws.send(JSON.stringify({ type: "delete_item", userId: "user123", item }));
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="max-w-2xl mx-auto space-y-6">
+      <h1 className="text-2xl font-bold">Real-Time Todo App</h1>
+      <ItemInput onAddItem={handleAddItem} />
+      <ItemList items={items} onDeleteItem={handleDeleteItem} />
+    </div>
+  );
 }
 
-export default App
+export default App;
