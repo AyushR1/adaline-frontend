@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { icons } from '@/components/IconList';
+import { Item } from '../types/items';
 
 import {
   DropdownMenu,
@@ -10,10 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type Item = {
-  text: string;
-  icon: keyof typeof icons;
-};
+
 
 export const ItemInput: React.FC<{ onAddItem: (item: Item) => void }> = ({
   onAddItem,

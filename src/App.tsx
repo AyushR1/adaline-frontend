@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ItemInput } from './components/ItemInput';
 import { ItemList } from './components/ItemList';
 import { v4 as uuidv4 } from 'uuid';
-
+import { Item } from './types/items';
 const WS_URL = import.meta.env.VITE_WEBSOCKET_URL;
 
 function App() {

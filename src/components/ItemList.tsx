@@ -1,9 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { icons } from '@/components/IconList';
-type Item = {
-  text: string;
-  icon: keyof typeof icons;
-};
+import { Item } from '../types/items';
+
 
 export const ItemList: React.FC<{
   items: Item[];
