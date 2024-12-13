@@ -3,7 +3,7 @@ import { icons } from "../components/IconList";
 export type Item = {
     id: string;
     text: string;
-    order: number;
+    order: number | null;
     folder_id: string | null;  
     icon: keyof typeof icons;
   };

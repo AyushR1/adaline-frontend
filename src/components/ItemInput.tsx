@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { icons } from '@/components/IconList';
 import { Item } from '../types/items';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
   DropdownMenu,
@@ -22,7 +23,7 @@ export const ItemInput: React.FC<{ onAddItem: (item: Item) => void }> = ({
 
   const handleAddItem = () => {
     if (text.trim()) {
-      onAddItem({ text, icon: selectedIcon });
+      onAddItem({ text, icon: selectedIcon, id: uuidv4(), order: 0, folder_id: null });
       setText('');
     }
   };

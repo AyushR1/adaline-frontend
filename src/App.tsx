@@ -38,7 +38,6 @@ function App() {
       console.log('Received message', message);
       switch (message.type) {
         case 'add_item':
-          console.log('item added', message);
           setItems((prev) => [...prev, message.item]);
           break;
 
@@ -56,15 +55,17 @@ function App() {
             prev.filter((folder) => folder.id !== message.folderId)
           );
           break;
-        case 'move_item':
-          setFolders((prev) =>
-            prev.map((folder) =>
-              folder.id === message.folderId
-                ? { ...folder, items: [...folder.items, message.item] }
-                : folder
-            )
-          );
-          break;
+    
+          case 'move_item':
+            setItems((prev) => {
+              const updatedItems = prev.map((item) =>
+                item.id === message.itemId
+                  ? { ...item, folder_id: message.folderId }
+                  : item
+              );
+              return updatedItems.sort((a, b) => a.order - b.order);
+            });
+            break;
         case 'move_folder':
           setFolders((prev) =>
             prev.map((folder) =>
@@ -88,6 +89,7 @@ function App() {
   }, []);
 
   const handleAddItem = (item: Item) => {
+    item.order = items.length > 0 ? items[items.length -1 ].order + 10 : 10;
     if (ws) {
       ws.send(JSON.stringify({ type: 'add_item', userId, item }));
     }
@@ -112,7 +114,14 @@ function App() {
       );
     }
   };
-  const handleMoveItem = (itemId: string, folderId: string | null) => {
+  const handleMoveItem = (itemId: string, folderId: string | null, newOrder: number | null) => {
+    console.log('move item', itemId, folderId, newOrder);
+    items.forEach((item) => {
+      if (item.id === itemId) {
+        item.order = newOrder;
+        item.folder_id = folderId;
+      }
+    });
     if (ws) {
       ws.send(
         JSON.stringify({
@@ -120,39 +129,21 @@ function App() {
           userId,
           itemId,
           folderId,
+          newOrder,
         })
       );
     }
   };
   
-  const handleAddItemToFolder = (folderId: string, text: string) => {
-    if (ws) {
-      const newItem = { id: uuidv4(), text };
-      ws.send(
-        JSON.stringify({ type: '', userId, folderId, item: newItem })
-      );
-    }
-  };
+ 
 
-  const handleDeleteItemFromFolder = (folderId: string, itemId: string) => {
-    if (ws) {
-      ws.send(
-        JSON.stringify({
-          type: 'item_deleted_from_folder',
-          userId,
-          folderId,
-          itemId,
-        })
-      );
-    }
-  };
   return (
     <div className="flex justify-center items-start min-h-screen pt-10">
       <div className="max-w-2xl space-y-6">
         <h1 className="text-2xl font-bold">Real-Time Todo App with Icons</h1>
         <ItemInput onAddItem={handleAddItem} />
         <FolderInput onAddFolder={handleAddFolder} />
-        <ItemList items={items} folders={folders} onDeleteItem={handleDeleteItem} onMoveItem={handleMoveItem} />
+        <ItemList items={items} onDeleteItem={handleDeleteItem} onMoveItem={handleMoveItem} />
       </div>
     </div>
   );
