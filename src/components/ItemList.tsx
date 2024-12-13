@@ -31,10 +31,22 @@ export const ItemList: React.FC<{
     if (source.index === destination.index) return; // No movement
     var newOrder ;
     if (source.index < destination.index) {
-      newOrder = items[destination.index].order + 1;
+      if (destination.index === items.length - 1) {
+        newOrder = items[destination.index].order + 10;
+      }
+      else {
+      newOrder = (items[destination.index].order + items[destination.index+1].order) /2;
+      }
+      // newOrder = items[destination.index].
     }
     if (source.index > destination.index) {
-      newOrder = items[destination.index].order - 1;
+      if (destination.index === 0) {
+        newOrder = items[destination.index].order / 2;
+      }
+      else {
+      newOrder = (items[destination.index].order + items[destination.index-1].order) /2;
+      }
+      // newOrder = items[destination.index].order - 1;
     }
     onMoveItem(items[source.index].id, null, newOrder);
   };
