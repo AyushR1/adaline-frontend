@@ -6,18 +6,17 @@ import { v4 as uuidv4 } from 'uuid';
 const WS_URL = import.meta.env.VITE_WEBSOCKET_URL;
 
 function App() {
-  const [items, setItems] = useState<string[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [userId, setUserId] = useState<string>('');
 
-  // Function to get userId from query params or generate a new one
   const getUserId = () => {
     const params = new URLSearchParams(window.location.search);
     let id = params.get('userId');
     if (!id) {
-      id = uuidv4(); // Generate a new UUID if userId doesn't exist
+      id = uuidv4();
       const newUrl = `${window.location.origin}${window.location.pathname}?userId=${id}`;
-      window.history.replaceState({}, document.title, newUrl); // Update URL with new userId
+      window.history.replaceState({}, document.title, newUrl);
     }
     return id;
   };
@@ -27,7 +26,6 @@ function App() {
     setUserId(id);
 
     const websocket = new WebSocket(WS_URL);
-
     websocket.onopen = () => {
       console.log('Connected to WebSocket');
       websocket.send(JSON.stringify({ type: 'join', userId: id }));
@@ -40,7 +38,9 @@ function App() {
           setItems((prev) => [...prev, message.item]);
           break;
         case 'item_deleted':
-          setItems((prev) => prev.filter((item) => item !== message.item));
+          setItems((prev) =>
+            prev.filter((item) => item.text !== message.item.text)
+          );
           break;
         default:
           console.error('Unknown message type', message);
@@ -48,7 +48,6 @@ function App() {
     };
 
     websocket.onclose = () => console.log('WebSocket closed');
-
     setWs(websocket);
 
     return () => {
@@ -56,13 +55,13 @@ function App() {
     };
   }, []);
 
-  const handleAddItem = (item: string) => {
+  const handleAddItem = (item: Item) => {
     if (ws) {
       ws.send(JSON.stringify({ type: 'add_item', userId, item }));
     }
   };
 
-  const handleDeleteItem = (item: string) => {
+  const handleDeleteItem = (item: Item) => {
     if (ws) {
       ws.send(JSON.stringify({ type: 'delete_item', userId, item }));
     }
@@ -71,7 +70,7 @@ function App() {
   return (
     <div className="flex justify-center items-start min-h-screen pt-10">
       <div className="max-w-2xl space-y-6">
-        <h1 className="text-2xl font-bold">Real-Time Todo App</h1>
+        <h1 className="text-2xl font-bold">Real-Time Todo App with Icons</h1>
         <ItemInput onAddItem={handleAddItem} />
         <ItemList items={items} onDeleteItem={handleDeleteItem} />
       </div>
