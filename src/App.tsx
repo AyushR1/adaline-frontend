@@ -216,7 +216,7 @@ function App() {
   return (
     <div className="flex justify-center items-start min-h-screen pt-10">
       <div className="max-w-2xl space-y-6">
-        <h1 className="text-2xl font-bold">Real-Time Todo App with Icons</h1>
+        <h1 className="text-2xl font-bold">Adaline Technical Challenge</h1>
         <ItemInput onAddItem={handleAddItem} />
         <FolderInput onAddFolder={handleAddFolder} />
         <ItemList
