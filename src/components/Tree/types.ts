@@ -1,6 +1,6 @@
-import type {MutableRefObject} from 'react';
-import type {UniqueIdentifier} from '@dnd-kit/core';
-import { icons } from "../IconList";
+import type { MutableRefObject } from 'react';
+import type { UniqueIdentifier } from '@dnd-kit/core';
+import { icons } from '../IconList';
 
 export interface TreeItem {
   id: UniqueIdentifier;
@@ -28,86 +28,45 @@ export type SensorContext = MutableRefObject<{
 
 export const dummyData: TreeItem[] = [
   {
-    id: "550e8400-e29b-41d4-a716-446655440000",
-    name: "Main Folder",
-    order: 1,
-    folder_id: null,
-    icon: "folder",
+    id: 'b9988dbd-5d6c-4ea5-a12a-1e01d298bb35',
+    name: 'Main Folder',
+    order: 10,
     collapsed: false,
     item_type: 'folder',
     children: [
       {
-        id: "550e8400-e29b-41d4-a716-446655440001",
-        name: "Sub Folder 1",
-        order: 1,
-        folder_id: "550e8400-e29b-41d4-a716-446655440000",
-        icon: "folder",
+        id: 'b58ec8c4-5f8f-436f-a1e9-7edf68b4953b',
+        name: 'sub folder',
+        order: 15,
         collapsed: false,
         item_type: 'folder',
         children: [
           {
-            id: "550e8400-e29b-41d4-a716-446655440002",
-            name: "Item 1",
-            order: 1,
-            folder_id: "550e8400-e29b-41d4-a716-446655440001",
-            icon: "document",
-            collapsed: false,
+            id: 'e281389a-b947-406e-9a87-36775305e93d',
+            name: 'Item 1',
+            order: 20,
+            folder_id: 'b58ec8c4-5f8f-436f-a1e9-7edf68b4953b',
+            icon: 'check',
+            userId: '1863a414-0afa-40e6-91c2-a1412bdac7e5',
+            createdAt: '2024-12-14T17:40:52.301Z',
+            updatedAt: '2024-12-14T17:42:11.853Z',
             item_type: 'item',
             children: [],
           },
           {
-            id: "550e8400-e29b-41d4-a716-446655440003",
-            name: "Item 2",
-            order: 2,
-            folder_id: "550e8400-e29b-41d4-a716-446655440001",
-            icon: "trash",
-            collapsed: false,
+            id: '438989b6-f2ad-464a-a7e9-87b91faf4c5b',
+            name: 'Item 2',
+            order: 30,
+            folder_id: 'b58ec8c4-5f8f-436f-a1e9-7edf68b4953b',
+            icon: 'check',
+            userId: '1863a414-0afa-40e6-91c2-a1412bdac7e5',
+            createdAt: '2024-12-14T17:41:02.466Z',
+            updatedAt: '2024-12-14T17:42:17.182Z',
             item_type: 'item',
             children: [],
           },
         ],
       },
-      {
-        id: "550e8400-e29b-41d4-a716-446655440004",
-        name: "Item 3",
-        order: 2,
-        folder_id: "550e8400-e29b-41d4-a716-446655440000",
-        icon: "archivebox",
-        collapsed: false,
-        item_type: 'item',
-        children: [],
-      },
     ],
-  },
-  {
-    id: "550e8400-e29b-41d4-a716-446655440005",
-    name: "Second Folder",
-    order: 2,
-    folder_id: null,
-    icon: "folder",
-    collapsed: false,
-    item_type: 'folder',
-    children: [
-      {
-        id: "550e8400-e29b-41d4-a716-446655440006",
-        name: "Item 4",
-        order: 1,
-        folder_id: "550e8400-e29b-41d4-a716-446655440005",
-        icon: "arrowdownright",
-        collapsed: false,
-        item_type: 'item',
-        children: [],
-      },
-    ],
-  },
-  {
-    id: "550e8400-e29b-41d4-a716-446655440007",
-    name: "Loose Item",
-    order: 3,
-    folder_id: null,
-    icon: "document",
-    collapsed: false,
-    item_type: 'item',
-    children: [],
   },
 ];

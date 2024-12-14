@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Item, Folder } from './types/items';
 import { FolderInput } from './components/FolderInput';
 import { TreeItem } from './components/Tree/types';
+import { dummyData } from './components/Tree/types';
 const WS_URL = import.meta.env.VITE_WEBSOCKET_URL;
 
 function App() {
@@ -22,10 +23,23 @@ function App() {
     }
     return id;
   };
-
+  const fetchInitialItems = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/items/?user_id=${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch items');
+      }
+      const data = await response.json();
+      console.log('Fetched initial items:', data);
+      setItems(data || []);
+    } catch (error) {
+      console.error('Error fetching initial items:', error);
+    }
+  };
   useEffect(() => {
     const id = getUserId();
     setUserId(id);
+    fetchInitialItems(id);
     const websocket = new WebSocket(WS_URL);
     websocket.onopen = () => {
       console.log('Connected to WebSocket');
