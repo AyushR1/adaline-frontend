@@ -23,15 +23,39 @@ export const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
   }
   return <Droppable {...props}>{children}</Droppable>;
 };
+function computeNewOrder(sourceIndex, destinationIndex, items) {
+  let newOrder;
 
+  if (sourceIndex < destinationIndex) {
+    if (destinationIndex === items.length - 1) {
+      // Destination is the last item
+      newOrder = items[destinationIndex].order + 10;
+    } else {
+      // Destination is in the middle
+      newOrder =
+        (items[destinationIndex].order + items[destinationIndex + 1].order) / 2;
+    }
+  } else if (sourceIndex > destinationIndex) {
+    if (destinationIndex === 0) {
+      // Destination is the first item
+      newOrder = items[destinationIndex].order / 2;
+    } else {
+      // Destination is in the middle
+      newOrder =
+        (items[destinationIndex].order + items[destinationIndex - 1].order) / 2;
+    }
+  }
 
+  return newOrder;
+}
 export const ItemList: React.FC<{
   items: ItemXFolder[];
   onDeleteItem: (item: Item) => void;
   onMoveItem: (
     itemId: string,
     folderId: string | null,
-    newOrder: number | null
+    newOrder: number | null,
+    nested_order: number | null
   ) => void;
 }> = ({ items, onDeleteItem, onMoveItem }) => {
   const onDragEnd = (result: any) => {
@@ -40,34 +64,32 @@ export const ItemList: React.FC<{
     if (!destination) return; // Dropped outside the list
 
     if (source.index === destination.index) return; // No movement
-    var newOrder;
 
-    if (items[source.index].item_type === 'item' && items[destination.index].item_type === 'folder') {
-      onMoveItem(items[source.index].id, items[destination.index].id, null);}
 
-    if (source.index < destination.index) {
-      if (destination.index === items.length - 1) {
-        newOrder = items[destination.index].order + 10;
-      } else {
-        newOrder =
-          (items[destination.index].order +
-            items[destination.index + 1].order) /
-          2;
-      }
-      // newOrder = items[destination.index].
+    if (
+      items[source.index].item_type === 'item' &&
+      (items[destination.index].item_type === 'folder' || items[destination.index].folder_id != null)
+    ) {
+      const newOrder = computeNewOrder(source.index, destination.index, items);
+      // nestedorder = 
+      onMoveItem(items[source.index].id, items[destination.index].id, newOrder);
     }
-    if (source.index > destination.index) {
-      if (destination.index === 0) {
-        newOrder = items[destination.index].order / 2;
-      } else {
-        newOrder =
-          (items[destination.index].order +
-            items[destination.index - 1].order) /
-          2;
-      }
-      // newOrder = items[destination.index].order - 1;
-    }
+    const newOrder = computeNewOrder(source.index, destination.index, items);
     onMoveItem(items[source.index].id, null, newOrder);
+
+    // if (items[source.index].item_type == 'folder') {
+    //   onMoveItem(items[source.index].id, null, newOrder);
+    // } else if (
+    //   items[source.index].item_type == 'item' &&
+    //   items[destination.index].item_type == 'folder'
+    // ) {
+    //   let nested_order = 0;
+    //   onMoveItem(
+    //     items[source.index].id,
+    //     items[destination.index].folder_id,
+    //     items[destination.index].order.nested_order
+    //   );
+    // }
   };
   console.log('items', items);
   return (
@@ -115,7 +137,9 @@ export const ItemList: React.FC<{
                       >
                         <div className="flex items-center space-x-2">
                           <FolderIcon className="w-5 h-5" />
-                          <span>{item.name} Order: {item.order}</span>
+                          <span>
+                            {item.name} Order: {item.order}
+                          </span>
                         </div>
                       </div>
                     );

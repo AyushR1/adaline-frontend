@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { ItemInput } from './components/ItemInput';
 import { ItemList } from './components/ItemList';
 import { v4 as uuidv4 } from 'uuid';
-import { Item, Folder, ItemXFolder } from './types/items';
+import { Item, Folder, ItemXFolder, dummyData } from './types/items';
 import { FolderInput } from './components/FolderInput';
 const WS_URL = import.meta.env.VITE_WEBSOCKET_URL;
 
 function App() {
-  const [items, setItems] = useState<ItemXFolder[]>([]);
+  const [items, setItems] = useState<ItemXFolder[]>(dummyData);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [userId, setUserId] = useState<string>('');
@@ -118,7 +118,8 @@ function App() {
   const handleMoveItem = (
     itemId: string,
     folderId: string | null,
-    newOrder: number | null
+    newOrder: number | null,
+    nestedOrder: number | null
   ) => {
     console.log('move item', itemId, folderId, newOrder);
     items.forEach((item) => {
@@ -127,6 +128,12 @@ function App() {
         item.folder_id = folderId;
       }
     });
+    // items.forEach((item) => {
+    //   if (item.folder_id === folderId) {
+    //     item.order = newOrder;
+    //     item.nested_order = nestedOrder;
+    //   }
+    // });
     if (ws) {
       ws.send(
         JSON.stringify({
