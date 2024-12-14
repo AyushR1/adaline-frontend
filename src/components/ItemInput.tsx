@@ -23,7 +23,7 @@ export const ItemInput: React.FC<{ onAddItem: (item: Item) => void }> = ({
 
   const handleAddItem = () => {
     if (text.trim()) {
-      onAddItem({ text, icon: selectedIcon, id: uuidv4(), order: 0, folder_id: null });
+      onAddItem({ name: text, icon: selectedIcon, id: uuidv4(), order: 0, folder_id: null });
       setText('');
     }
   };
