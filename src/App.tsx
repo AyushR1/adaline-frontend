@@ -2,13 +2,12 @@ import { useEffect, useState } from 'react';
 import { ItemInput } from './components/ItemInput';
 import { ItemList } from './components/ItemList';
 import { v4 as uuidv4 } from 'uuid';
-import { Item, Folder } from './types/items';
+import { Item, Folder, ItemXFolder } from './types/items';
 import { FolderInput } from './components/FolderInput';
 const WS_URL = import.meta.env.VITE_WEBSOCKET_URL;
 
-
 function App() {
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<ItemXFolder[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [userId, setUserId] = useState<string>('');
@@ -47,25 +46,24 @@ function App() {
           );
           break;
         case 'add_folder':
-          setFolders((prev) => [...prev, message.folder]);
+          setItems((prev) => [...prev, message.folder]);
           break;
-
         case 'delete_folder':
           setFolders((prev) =>
             prev.filter((folder) => folder.id !== message.folderId)
           );
           break;
-    
-          case 'move_item':
-            setItems((prev) => {
-              const updatedItems = prev.map((item) =>
-                item.id === message.itemId
-                  ? { ...item, folder_id: message.folderId }
-                  : item
-              );
-              return updatedItems.sort((a, b) => a.order - b.order);
-            });
-            break;
+
+        case 'move_item':
+          setItems((prev) => {
+            const updatedItems = prev.map((item) =>
+              item.id === message.itemId
+                ? { ...item, folder_id: message.folderId }
+                : item
+            );
+            return updatedItems.sort((a, b) => a.order - b.order);
+          });
+          break;
         case 'move_folder':
           setFolders((prev) =>
             prev.map((folder) =>
@@ -89,7 +87,8 @@ function App() {
   }, []);
 
   const handleAddItem = (item: Item) => {
-    item.order = items.length > 0 ? items[items.length -1 ].order + 10 : 10;
+    item.order = items.length > 0 ? items[items.length - 1].order + 10 : 10;
+    item.item_type = 'item';
     if (ws) {
       ws.send(JSON.stringify({ type: 'add_item', userId, item }));
     }
@@ -108,13 +107,19 @@ function App() {
         name,
         items: [],
         parent_folder: parentId,
+        item_type: 'folder',
+        order:  items.length > 0 ? items[items.length - 1].order + 10 : 10
       };
       ws.send(
         JSON.stringify({ type: 'add_folder', userId, folder: newFolder })
       );
     }
   };
-  const handleMoveItem = (itemId: string, folderId: string | null, newOrder: number | null) => {
+  const handleMoveItem = (
+    itemId: string,
+    folderId: string | null,
+    newOrder: number | null
+  ) => {
     console.log('move item', itemId, folderId, newOrder);
     items.forEach((item) => {
       if (item.id === itemId) {
@@ -125,7 +130,7 @@ function App() {
     if (ws) {
       ws.send(
         JSON.stringify({
-          type: "move_item",
+          type: 'move_item',
           userId,
           itemId,
           folderId,
@@ -134,8 +139,6 @@ function App() {
       );
     }
   };
-  
- 
 
   return (
     <div className="flex justify-center items-start min-h-screen pt-10">
@@ -143,7 +146,11 @@ function App() {
         <h1 className="text-2xl font-bold">Real-Time Todo App with Icons</h1>
         <ItemInput onAddItem={handleAddItem} />
         <FolderInput onAddFolder={handleAddFolder} />
-        <ItemList items={items} onDeleteItem={handleDeleteItem} onMoveItem={handleMoveItem} />
+        <ItemList
+          items={items}
+          onDeleteItem={handleDeleteItem}
+          onMoveItem={handleMoveItem}
+        />
       </div>
     </div>
   );

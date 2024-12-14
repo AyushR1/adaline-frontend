@@ -12,6 +12,18 @@ export type Folder = {
     id: string;
     name: string;
     items: Item[];
+    order: number | null;
     parent_folder: string | null;
   };
+
+export type ItemXFolder = {
+    id: string;
+    name: string;
+    order: number | null;
+    folder_id: string | null;
+    items: Item[];
+    icon: keyof typeof icons;
+    parent_folder: string | null;
+    item_type: 'item' | 'folder';
+}
   
