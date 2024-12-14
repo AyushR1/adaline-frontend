@@ -1,5 +1,4 @@
 
-import { Item, ItemXFolder } from '../types/items';
 import {SortableTree} from './Tree/SortableTree';
 import { TreeItem } from './Tree/types';
 

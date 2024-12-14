@@ -73,7 +73,7 @@ export const ItemInput: React.FC<{ onAddItem: (item: Item) => void }> = ({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-      <Button onClick={handleAddItem}>Add Item</Button>
+      <Button className='w-56' onClick={handleAddItem}>Add Item</Button>
     </div>
   );
 };

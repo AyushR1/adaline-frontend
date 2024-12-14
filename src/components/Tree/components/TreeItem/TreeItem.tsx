@@ -63,18 +63,7 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
       >
         <div className={styles.TreeItem} ref={ref} style={style}>
           <Handle className="ml-0 bg-white " {...handleProps} />
-          {onCollapse && (
-            <Action
-              onClick={onCollapse}
-              className={classNames(
-                styles.Collapse,
-                collapsed && styles.collapsed,
-                'bg-white ml-0'
-              )}
-            >
-              {collapseIcon}
-            </Action>
-          )}
+          
           {icons[props.icon]}
           <span  className={styles.Text}>
             {' '}
@@ -87,6 +76,18 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
           {clone && childCount && childCount > 1 ? (
             <span className={styles.Count}>{childCount}</span>
           ) : null}
+          {onCollapse && (
+            <Action
+              onClick={onCollapse}
+              className={classNames(
+                styles.Collapse,
+                collapsed && styles.collapsed,
+                'bg-white ml-0'
+              )}
+            >
+              {collapseIcon}
+            </Action>
+          )}
         </div>
       </li>
     );
