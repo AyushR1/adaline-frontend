@@ -258,32 +258,63 @@ export function SortableTree({
   function handleDragOver({over}: DragOverEvent) {
     setOverId(over?.id ?? null);
   }
+  function computeNewOrder(sourceIndex, destinationIndex, items, parentIndex) {
+    let siblings;
   
-  function computeNewOrder(sourceIndex, destinationIndex, items ) {
-    let newOrder = items[sourceIndex].order;
-
-    if (sourceIndex < destinationIndex) {
-      if (destinationIndex === items.length - 1) {
-        // Destination is the last item
-        newOrder = items[destinationIndex].order + 10;
+    if (parentIndex === -1) {
+      // Handle root-level case (no parent)
+      siblings = items.filter((item) => item.parentId === null);
+    } else {
+      // Handle nested case (find siblings with the same parent)
+      const parentItem = items[parentIndex];
+      siblings = items.filter((item) => item.parentId === parentItem.id);
+    }
+  
+    const sourceItem = items[sourceIndex];
+    const destinationItem = items[destinationIndex];
+  
+    // Find indices within the siblings array
+    const siblingSourceIndex = siblings.indexOf(sourceItem);
+    const siblingDestinationIndex = siblings.indexOf(destinationItem);
+  
+    let newOrder;
+  
+    if (siblingSourceIndex < siblingDestinationIndex) {
+      if (siblingDestinationIndex === siblings.length - 1) {
+        // Destination is the last sibling
+        newOrder = siblings[siblingDestinationIndex].order + 10;
       } else {
-        // Destination is in the middle
+        // Destination is in the middle of siblings
         newOrder =
-          (items[destinationIndex].order + items[destinationIndex + 1].order) / 2;
+          (siblings[siblingDestinationIndex].order +
+            siblings[siblingDestinationIndex + 1].order) /
+          2;
       }
-    } else if (sourceIndex > destinationIndex) {
-      if (destinationIndex === 0) {
-        // Destination is the first item
-        newOrder = items[destinationIndex].order / 2;
+    } else if (siblingSourceIndex > siblingDestinationIndex) {
+      if (siblingDestinationIndex === 0) {
+        // Destination is the first sibling
+        newOrder = siblings[siblingDestinationIndex].order / 2;
       } else {
-        // Destination is in the middle
+        // Destination is in the middle of siblings
         newOrder =
-          (items[destinationIndex].order + items[destinationIndex - 1].order) / 2;
+          (siblings[siblingDestinationIndex].order +
+            siblings[siblingDestinationIndex - 1].order) /
+          2;
       }
+    } else {
+      // If the source and destination indices are the same, keep the same order
+      newOrder = sourceItem.order;
+    }
+  
+    // Handle edge case: If no siblings are present
+    if (siblings.length === 0) {
+      // Assign an initial order
+      newOrder = 10;
     }
   
     return newOrder;
   }
+  
   function handleDragEnd({active, over}: DragEndEvent) {
     resetState();
   
@@ -300,7 +331,7 @@ export function SortableTree({
       const overTreeItem = clonedItems[overIndex];
       const parentTreeItem = clonedItems[parentIndex];
 
-      const newOrder = computeNewOrder(activeIndex, overIndex, clonedItems);
+      const newOrder = computeNewOrder(activeIndex, overIndex, clonedItems, parentIndex);
 
       // // Prevent `item` from increasing depth (no nesting for `item`)
       if ( depth > activeTreeItem.depth && parentTreeItem.item_type === 'item') {
