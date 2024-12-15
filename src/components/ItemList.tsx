@@ -1,6 +1,6 @@
 
-import {SortableTree} from './Tree/SortableTree';
-import { TreeItem } from './Tree/types';
+import {SortableTree} from './tree/SortableTree';
+import { TreeItem } from './tree/types';
 
 const Wrapper = ({children}: {children: React.ReactNode}) => (
   <div

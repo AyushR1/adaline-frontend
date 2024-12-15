@@ -1,5 +1,5 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {createPortal} from 'react-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Announcements,
   DndContext,
@@ -26,20 +26,17 @@ import {
 } from '@dnd-kit/sortable';
 
 import {
-  buildTree,
   flattenTree,
   getProjection,
   getChildCount,
   removeItem,
   removeChildrenOf,
-  setProperty,
 } from './utilities';
-import type {FlattenedItem, SensorContext, TreeItems} from './types';
-import {dummyData} from './types';
-import {sortableTreeKeyboardCoordinates} from './keyboardCoordinates';
-import {SortableTreeItem} from './components';
-import {CSS} from '@dnd-kit/utilities';
+import type { FlattenedItem, SensorContext, TreeItems } from './types';
 
+import { sortableTreeKeyboardCoordinates } from './keyboardCoordinates';
+import { SortableTreeItem } from './components';
+import { CSS } from '@dnd-kit/utilities';
 
 const measuring = {
   droppable: {
@@ -48,9 +45,9 @@ const measuring = {
 };
 
 const dropAnimationConfig: DropAnimation = {
-  keyframes({transform}) {
+  keyframes({ transform }) {
     return [
-      {opacity: 1, transform: CSS.Transform.toString(transform.initial)},
+      { opacity: 1, transform: CSS.Transform.toString(transform.initial) },
       {
         opacity: 0,
         transform: CSS.Transform.toString({
@@ -62,8 +59,8 @@ const dropAnimationConfig: DropAnimation = {
     ];
   },
   easing: 'ease-out',
-  sideEffects({active}) {
-    active.node.animate([{opacity: 0}, {opacity: 1}], {
+  sideEffects({ active }) {
+    active.node.animate([{ opacity: 0 }, { opacity: 1 }], {
       duration: defaultDropAnimation.duration,
       easing: defaultDropAnimation.easing,
     });
@@ -76,18 +73,21 @@ interface Props {
   indentationWidth?: number;
   indicator?: boolean;
   removable?: boolean;
-  onMoveItem: (sourceIndex: number, destinationIndex: number | null, newOrder: number) => void;
+  onMoveItem: (
+    itemId: string,
+    folderId: string | null,
+    newOrder: number | null
+  ) => void;
   onEditItem: (itemId: string, collapsed: boolean) => void;
 }
 function sortTreeItems(items: TreeItem[]): TreeItem[] {
   return items
-    .map(item => ({
+    .map((item) => ({
       ...item,
       children: sortTreeItems(item.children), // Recursively sort children
     }))
     .sort((a, b) => a.order - b.order); // Sort by order property
 }
-
 
 export function SortableTree({
   collapsible,
@@ -113,7 +113,7 @@ export function SortableTree({
     const flattenedTree = flattenTree(items);
 
     const collapsedItems = flattenedTree.reduce<string[]>(
-      (acc, {children, collapsed, id}) =>
+      (acc, { children, collapsed, id }) =>
         collapsed && children.length ? [...acc, id] : acc,
       []
     );
@@ -148,11 +148,11 @@ export function SortableTree({
   );
 
   const sortedIds = useMemo(
-    () => flattenedItems.map(({id}) => id),
+    () => flattenedItems.map(({ id }) => id),
     [flattenedItems]
   );
   const activeItem = activeId
-    ? flattenedItems.find(({id}) => id === activeId)
+    ? flattenedItems.find(({ id }) => id === activeId)
     : null;
 
   useEffect(() => {
@@ -163,26 +163,26 @@ export function SortableTree({
   }, [flattenedItems, offsetLeft]);
 
   const announcements: Announcements = {
-    onDragStart({active}) {
+    onDragStart({ active }) {
       return `Picked up ${active.id}.`;
     },
-    onDragMove({active, over}) {
+    onDragMove({ active, over }) {
       return getMovementAnnouncement('onDragMove', active.id, over?.id);
     },
-    onDragOver({active, over}) {
+    onDragOver({ active, over }) {
       return getMovementAnnouncement('onDragOver', active.id, over?.id);
     },
-    onDragEnd({active, over}) {
+    onDragEnd({ active, over }) {
       return getMovementAnnouncement('onDragEnd', active.id, over?.id);
     },
-    onDragCancel({active}) {
+    onDragCancel({ active }) {
       return `Moving was cancelled. ${active.id} was dropped in its original position.`;
     },
   };
 
   return (
     <DndContext
-      accessibility={{announcements}}
+      accessibility={{ announcements }}
       sensors={sensors}
       collisionDetection={closestCenter}
       measuring={measuring}
@@ -193,26 +193,28 @@ export function SortableTree({
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-        {flattenedItems.map(({id, children, collapsed, depth, name, icon,order}) => (
-          <SortableTreeItem
-            key={id}
-            id={id}
-            value={id}
-            depth={id === activeId && projected ? projected.depth : depth}
-            indentationWidth={indentationWidth}
-            indicator={indicator}
-            collapsed={Boolean(collapsed && children.length)}
-            onCollapse={
-              collapsible && children.length
-                ? () => handleCollapse(id)
-                : undefined
-            }
-            onRemove={removable ? () => handleRemove(id) : undefined}
-            name={name}
-            icon={icon}
-            order={order}
-          />
-        ))}
+        {flattenedItems.map(
+          ({ id, children, collapsed, depth, name, icon, order }) => (
+            <SortableTreeItem
+              key={id}
+              id={id}
+              value={id}
+              depth={id === activeId && projected ? projected.depth : depth}
+              indentationWidth={indentationWidth}
+              indicator={indicator}
+              collapsed={Boolean(collapsed && children.length)}
+              onCollapse={
+                collapsible && children.length
+                  ? () => handleCollapse(id)
+                  : undefined
+              }
+              onRemove={removable ? () => handleRemove(id) : undefined}
+              name={name}
+              icon={icon}
+              order={order}
+            />
+          )
+        )}
         {createPortal(
           <DragOverlay
             dropAnimation={dropAnimationConfig}
@@ -235,11 +237,11 @@ export function SortableTree({
     </DndContext>
   );
 
-  function handleDragStart({active: {id: activeId}}: DragStartEvent) {
+  function handleDragStart({ active: { id: activeId } }: DragStartEvent) {
     setActiveId(activeId);
     setOverId(activeId);
 
-    const activeItem = flattenedItems.find(({id}) => id === activeId);
+    const activeItem = flattenedItems.find(({ id }) => id === activeId);
 
     if (activeItem) {
       setCurrentPosition({
@@ -251,16 +253,16 @@ export function SortableTree({
     document.body.style.setProperty('cursor', 'grabbing');
   }
 
-  function handleDragMove({delta}: DragMoveEvent) {
+  function handleDragMove({ delta }: DragMoveEvent) {
     setOffsetLeft(delta.x);
   }
 
-  function handleDragOver({over}: DragOverEvent) {
+  function handleDragOver({ over }: DragOverEvent) {
     setOverId(over?.id ?? null);
   }
   function computeNewOrder(sourceIndex, destinationIndex, items, parentIndex) {
     let siblings;
-  
+
     if (parentIndex === -1) {
       // Handle root-level case (no parent)
       siblings = items.filter((item) => item.parentId === null);
@@ -269,16 +271,18 @@ export function SortableTree({
       const parentItem = items[parentIndex];
       siblings = items.filter((item) => item.parentId === parentItem.id);
     }
-  
+
     const sourceItem = items[sourceIndex];
     const destinationItem = items[destinationIndex];
-  
+
     // Find indices within the siblings array
     const siblingSourceIndex = siblings.indexOf(sourceItem);
     const siblingDestinationIndex = siblings.indexOf(destinationItem);
-  
+    if (siblingDestinationIndex === -1) {
+      return siblings[siblings.length - 1].order + 10;
+    }
     let newOrder;
-  
+
     if (siblingSourceIndex < siblingDestinationIndex) {
       if (siblingDestinationIndex === siblings.length - 1) {
         // Destination is the last sibling
@@ -305,41 +309,45 @@ export function SortableTree({
       // If the source and destination indices are the same, keep the same order
       newOrder = sourceItem.order;
     }
-  
+
     // Handle edge case: If no siblings are present
     if (siblings.length === 0) {
       // Assign an initial order
       newOrder = 10;
     }
-  
+
     return newOrder;
   }
-  
-  function handleDragEnd({active, over}: DragEndEvent) {
+
+  function handleDragEnd({ active, over }: DragEndEvent) {
     resetState();
-  
+
     if (projected && over) {
-      const {depth, parentId} = projected;
+      const { depth, parentId } = projected;
       // Clone and flatten the tree
       const clonedItems: FlattenedItem[] = JSON.parse(
         JSON.stringify(flattenTree(items))
       );
-      const overIndex = clonedItems.findIndex(({id}) => id === over.id);
-      const activeIndex = clonedItems.findIndex(({id}) => id === active.id);
-      const parentIndex = clonedItems.findIndex(({id}) => id === parentId);
+      const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
+      const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
+      const parentIndex = clonedItems.findIndex(({ id }) => id === parentId);
       const activeTreeItem = clonedItems[activeIndex];
       const overTreeItem = clonedItems[overIndex];
       const parentTreeItem = clonedItems[parentIndex];
 
-      const newOrder = computeNewOrder(activeIndex, overIndex, clonedItems, parentIndex);
+      const newOrder = computeNewOrder(
+        activeIndex,
+        overIndex,
+        clonedItems,
+        parentIndex
+      );
 
       // // Prevent `item` from increasing depth (no nesting for `item`)
-      if ( depth > activeTreeItem.depth && parentTreeItem.item_type === 'item') {
+      if (depth > activeTreeItem.depth && parentTreeItem.item_type === 'item') {
         console.log('Invalid move; exit early');
-        return; 
+        return;
       }
       onMoveItem(clonedItems[activeIndex].id, parentTreeItem?.id, newOrder);
-      
     }
   }
 
@@ -360,14 +368,14 @@ export function SortableTree({
     setItems((items) => removeItem(items, id));
   }
 
-
   function handleCollapse(id) {
     flattenedItems.forEach((item) => {
       if (item.id === id) {
         const newValue = !item.collapsed;
         onEditItem(id, newValue);
       }
-  })}
+    });
+  }
 
   function getMovementAnnouncement(
     eventName: string,
@@ -393,8 +401,8 @@ export function SortableTree({
       const clonedItems: FlattenedItem[] = JSON.parse(
         JSON.stringify(flattenTree(items))
       );
-      const overIndex = clonedItems.findIndex(({id}) => id === overId);
-      const activeIndex = clonedItems.findIndex(({id}) => id === activeId);
+      const overIndex = clonedItems.findIndex(({ id }) => id === overId);
+      const activeIndex = clonedItems.findIndex(({ id }) => id === activeId);
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
 
       const previousItem = sortedItems[overIndex - 1];
@@ -413,7 +421,7 @@ export function SortableTree({
           let previousSibling: FlattenedItem | undefined = previousItem;
           while (previousSibling && projected.depth < previousSibling.depth) {
             const parentId: UniqueIdentifier | null = previousSibling.parentId;
-            previousSibling = sortedItems.find(({id}) => id === parentId);
+            previousSibling = sortedItems.find(({ id }) => id === parentId);
           }
 
           if (previousSibling) {
@@ -429,7 +437,7 @@ export function SortableTree({
   }
 }
 
-const adjustTranslate: Modifier = ({transform}) => {
+const adjustTranslate: Modifier = ({ transform }) => {
   return {
     ...transform,
     y: transform.y - 25,

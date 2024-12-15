@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { ItemInput } from './components/ItemInput';
 import { ItemList } from './components/ItemList';
 import { v4 as uuidv4 } from 'uuid';
-import { Item, Folder } from './types/items';
 import { FolderInput } from './components/FolderInput';
-import { TreeItem } from './components/Tree/types';
-import { dummyData } from './components/Tree/types';
+import { TreeItem } from './components/tree/types';
+
 const WS_URL = import.meta.env.VITE_WEBSOCKET_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 function App() {
   const [items, setItems] = useState<TreeItem[]>([]);
@@ -23,9 +23,12 @@ function App() {
     }
     return id;
   };
-  const fetchInitialItems = async (id) => {
+
+  const fetchInitialItems = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/items/?user_id=${id}`);
+      const response = await fetch(
+        `${API_URL}/items/?user_id=${id}`
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch items');
       }
@@ -36,6 +39,7 @@ function App() {
       console.error('Error fetching initial items:', error);
     }
   };
+
   useEffect(() => {
     const id = getUserId();
     setUserId(id);
@@ -57,7 +61,11 @@ function App() {
           setItems((prev) => [...prev, message.folder]);
           break;
         case 'move_item':
-          handleMoveItemhelper(message.itemId, message.folderId, message.newOrder);
+          handleMoveItemhelper(
+            message.itemId,
+            message.folderId,
+            message.newOrder
+          );
           break;
         case 'edit_item':
           handleEditItemhelper(message.itemId, message.collapsed);
@@ -75,15 +83,14 @@ function App() {
     };
   }, []);
 
-  const handleAddItem = (item: Item) => {
-    item.order = items.length > 0 ? items[items.length - 1].order + 10 : 10;
+  const handleAddItem = (item: TreeItem) => {
+    item.order = items?.length > 0 ? items[items.length - 1].order + 10 : 10;
     item.item_type = 'item';
     item.children = [];
     if (ws) {
       ws.send(JSON.stringify({ type: 'add_item', userId, item }));
     }
   };
-
 
   const handleAddFolder = (name: string, parentId: string | null = null) => {
     if (ws) {
@@ -103,122 +110,119 @@ function App() {
   };
 
   const handleEditItemhelper = (itemId: string, collapsed: boolean) => {
-    console.log("edit_item", itemId, collapsed);
-  
+    console.log('edit_item', itemId, collapsed);
+
     const updateItem = (items: TreeItem[]): TreeItem[] => {
       return items.map((item) => {
         // If this item's ID matches, update its 'collapsed' value
         if (item.id === itemId) {
           return { ...item, collapsed };
         }
-  
+
         // If this item has children, recursively update them
         if (item.children && item.children.length > 0) {
           return { ...item, children: updateItem(item.children) };
         }
-  
+
         // Return the item unchanged if no updates are needed
         return item;
       });
     };
-  
+
     // Update the state
     setItems((prevItems) => {
       const updatedItems = updateItem(prevItems);
-      console.log("items", updatedItems);
       return updatedItems;
     });
   };
-  
-const handleMoveItemhelper = (
-  itemId: string,
-  folderId: string | null,
-  newOrder: number | null
-) => {
-  const removeItemFromTree = (
-    tree: TreeItem[],
-    itemId: string
-  ): [TreeItem | null, TreeItem[]] => {
-    for (let i = 0; i < tree.length; i++) {
-      const node = tree[i];
-      if (node.id === itemId) {
-        // Remove the node and return it
-        const removedItem = { ...node };
-        tree.splice(i, 1);
-        return [removedItem, tree];
-      }
-      if (node.children?.length) {
-        const [removedItem, updatedChildren] = removeItemFromTree(
-          node.children,
-          itemId
-        );
-        if (removedItem) {
-          node.children = updatedChildren;
+
+  const handleMoveItemhelper = (
+    itemId: string,
+    folderId: string | null,
+    newOrder: number | null
+  ) => {
+    const removeItemFromTree = (
+      tree: TreeItem[],
+      itemId: string
+    ): [TreeItem | null, TreeItem[]] => {
+      for (let i = 0; i < tree.length; i++) {
+        const node = tree[i];
+        if (node.id === itemId) {
+          // Remove the node and return it
+          const removedItem = { ...node };
+          tree.splice(i, 1);
           return [removedItem, tree];
         }
+        if (node.children?.length) {
+          const [removedItem, updatedChildren] = removeItemFromTree(
+            node.children,
+            itemId
+          );
+          if (removedItem) {
+            node.children = updatedChildren;
+            return [removedItem, tree];
+          }
+        }
       }
-    }
-    return [null, tree];
-  };
+      return [null, tree];
+    };
 
-  const findFolderAndAddItem = (
-    tree: TreeItem[],
-    folderId: string,
-    item: TreeItem
-  ): TreeItem[] => {
-    return tree.map((node) => {
-      if (node.id === folderId) {
-        // Add the item as a child
-        return {
-          ...node,
-          children: [
-            ...(node.children || []),
-            { ...item, folder_id: folderId, order: newOrder },
-          ],
-        };
+    const findFolderAndAddItem = (
+      tree: TreeItem[],
+      folderId: string,
+      item: TreeItem
+    ): TreeItem[] => {
+      return tree.map((node) => {
+        if (node.id === folderId) {
+          // Add the item as a child
+          return {
+            ...node,
+            children: [
+              ...(node.children || []),
+              { ...item, folder_id: folderId, order: newOrder },
+            ],
+          };
+        }
+        if (node.children?.length) {
+          return {
+            ...node,
+            children: findFolderAndAddItem(node.children, folderId, item),
+          };
+        }
+        return node;
+      });
+    };
+
+    setItems((prevItems) => {
+      // Step 1: Remove the item from the tree
+      const [removedItem, updatedTree] = removeItemFromTree(
+        [...prevItems],
+        itemId
+      );
+
+      if (!removedItem) {
+        console.warn(`Item with id ${itemId} not found`);
+        return prevItems;
       }
-      if (node.children?.length) {
-        return {
-          ...node,
-          children: findFolderAndAddItem(node.children, folderId, item),
-        };
+
+      // Step 2: If folderId is provided, find the folder and add the item
+      if (folderId) {
+        return findFolderAndAddItem(updatedTree, folderId, removedItem);
       }
-      return node;
+
+      // Step 3: If no folderId is provided, add the item to the root level with folder_id set to null
+      return [
+        ...updatedTree,
+        { ...removedItem, folder_id: null, order: newOrder }, // Add the item back to the root
+      ];
     });
   };
-
-  setItems((prevItems) => {
-    // Step 1: Remove the item from the tree
-    const [removedItem, updatedTree] = removeItemFromTree(
-      [...prevItems],
-      itemId
-    );
-
-    if (!removedItem) {
-      console.warn(`Item with id ${itemId} not found`);
-      return prevItems;
-    }
-
-    // Step 2: If folderId is provided, find the folder and add the item
-    if (folderId) {
-      return findFolderAndAddItem(updatedTree, folderId, removedItem);
-    }
-
-    // Step 3: If no folderId is provided, add the item to the root level with folder_id set to null
-    return [
-      ...updatedTree,
-      { ...removedItem, folder_id: null, order: newOrder }, // Add the item back to the root
-    ];
-  });
-};
 
   const handleMoveItem = (
     itemId: string,
     folderId: string | null,
     newOrder: number | null
   ) => {
-
-    // Send the WebSocket message
     if (ws) {
       ws.send(
         JSON.stringify({
@@ -243,7 +247,7 @@ const handleMoveItemhelper = (
         })
       );
     }
-  }
+  };
 
   return (
     <div className="flex justify-center items-start min-h-screen pt-10">

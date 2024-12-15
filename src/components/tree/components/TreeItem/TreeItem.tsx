@@ -16,6 +16,9 @@ export interface Props extends Omit<HTMLAttributes<HTMLLIElement>, 'id'> {
   indicator?: boolean;
   indentationWidth: number;
   value: string;
+  icon: string;
+  name: string;
+  order: number;
   onCollapse?(): void;
   onRemove?(): void;
   wrapperRef?(node: HTMLLIElement): void;
@@ -71,6 +74,7 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
           <span  className={styles.Text}>
             {' '}
              {props.name}
+             {props.order}
           </span>
           {!clone && onRemove && (
             <Remove className="bg-white" onClick={onRemove} />
