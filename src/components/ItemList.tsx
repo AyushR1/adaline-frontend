@@ -1,6 +1,6 @@
 
 import {SortableTree} from './tree/SortableTree';
-import { TreeItem } from './tree/types';
+import { TreeItems } from './tree/types';
 
 const Wrapper = ({children}: {children: React.ReactNode}) => (
   <div
@@ -16,7 +16,7 @@ const Wrapper = ({children}: {children: React.ReactNode}) => (
 );
 
 export const ItemList: React.FC<{
-  items:TreeItem[],
+  items:TreeItems,
   onEditItem: (itemId: string, collapsed:boolean) => void;
   onMoveItem: (
     itemId: string,

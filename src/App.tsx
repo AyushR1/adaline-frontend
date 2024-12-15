@@ -4,7 +4,7 @@ import { ItemList } from './components/ItemList';
 import { v4 as uuidv4 } from 'uuid';
 import { FolderInput } from './components/FolderInput';
 import { TreeItem } from './components/tree/types';
-
+import { sortTreeItems } from './components/tree/SortableTree';
 const WS_URL = import.meta.env.VITE_WEBSOCKET_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -55,10 +55,10 @@ function App() {
       console.log('Received message', message);
       switch (message.type) {
         case 'add_item':
-          setItems((prev) => [...prev, message.item]);
+          setItems((prev) => sortTreeItems([...prev, message.item]));
           break;
         case 'add_folder':
-          setItems((prev) => [...prev, message.folder]);
+          setItems((prev) => sortTreeItems([...prev, message.folder]));
           break;
         case 'move_item':
           handleMoveItemhelper(
@@ -84,6 +84,8 @@ function App() {
   }, []);
 
   const handleAddItem = (item: TreeItem) => {
+    console.log('add_item', items);
+ 
     item.order = items?.length > 0 ? items[items.length - 1].order + 10 : 10;
     item.item_type = 'item';
     item.children = [];

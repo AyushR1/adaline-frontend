@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Announcements,
@@ -32,7 +32,12 @@ import {
   removeItem,
   removeChildrenOf,
 } from './utilities';
-import type { FlattenedItem, SensorContext, TreeItems } from './types';
+import type {
+  FlattenedItem,
+  SensorContext,
+  TreeItems,
+  TreeItem,
+} from './types';
 
 import { sortableTreeKeyboardCoordinates } from './keyboardCoordinates';
 import { SortableTreeItem } from './components';
@@ -74,19 +79,19 @@ interface Props {
   indicator?: boolean;
   removable?: boolean;
   onMoveItem: (
-    itemId: string,
+    itemId: string | number,
     folderId: string | null,
     newOrder: number | null
   ) => void;
   onEditItem: (itemId: string, collapsed: boolean) => void;
 }
-function sortTreeItems(items: TreeItem[]): TreeItem[] {
+export function sortTreeItems(items: TreeItem[]): TreeItem[] {
   return items
     .map((item) => ({
       ...item,
       children: sortTreeItems(item.children), // Recursively sort children
     }))
-    .sort((a, b) => a.order - b.order); // Sort by order property
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)); // Sort by order property
 }
 
 export function SortableTree({
@@ -103,14 +108,14 @@ export function SortableTree({
   const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
   useEffect(() => {
-    setItems(sortTreeItems(defaultItems));
+    setItems(sortTreeItems(defaultItems ?? []));
   }, [defaultItems]);
   const [currentPosition, setCurrentPosition] = useState<{
     parentId: UniqueIdentifier | null;
     overId: UniqueIdentifier;
   } | null>(null);
   const flattenedItems = useMemo(() => {
-    const flattenedTree = flattenTree(items);
+    const flattenedTree = flattenTree(items ?? []);
 
     const collapsedItems = flattenedTree.reduce<string[]>(
       (acc, { children, collapsed, id }) =>
@@ -278,9 +283,9 @@ export function SortableTree({
     // Find indices within the siblings array
     const siblingSourceIndex = siblings.indexOf(sourceItem);
     const siblingDestinationIndex = siblings.indexOf(destinationItem);
-    if (siblingDestinationIndex === -1) {
-      return siblings[siblings.length - 1].order + 10;
-    }
+    // if (siblingDestinationIndex === -1) {
+    //   return siblings[siblings.length - 1].order + 10;
+    // }
     let newOrder;
 
     if (siblingSourceIndex < siblingDestinationIndex) {
@@ -300,10 +305,14 @@ export function SortableTree({
         newOrder = siblings[siblingDestinationIndex].order / 2;
       } else {
         // Destination is in the middle of siblings
-        newOrder =
-          (siblings[siblingDestinationIndex].order +
-            siblings[siblingDestinationIndex - 1].order) /
-          2;
+        if (siblingDestinationIndex === -1) {
+          newOrder = siblings[siblings.length - 1].order + 10;
+        } else {
+          newOrder =
+            (siblings[siblingDestinationIndex].order +
+              siblings[siblingDestinationIndex - 1].order) /
+            2;
+        }
       }
     } else {
       // If the source and destination indices are the same, keep the same order
@@ -326,7 +335,7 @@ export function SortableTree({
       const { depth, parentId } = projected;
       // Clone and flatten the tree
       const clonedItems: FlattenedItem[] = JSON.parse(
-        JSON.stringify(flattenTree(items))
+        JSON.stringify(flattenTree(items ?? []))
       );
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
       const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
@@ -365,10 +374,10 @@ export function SortableTree({
   }
 
   function handleRemove(id: UniqueIdentifier) {
-    setItems((items) => removeItem(items, id));
+    setItems((items) => removeItem(items ?? [], id));
   }
 
-  function handleCollapse(id) {
+  function handleCollapse(id: any) {
     flattenedItems.forEach((item) => {
       if (item.id === id) {
         const newValue = !item.collapsed;
@@ -399,7 +408,7 @@ export function SortableTree({
       }
 
       const clonedItems: FlattenedItem[] = JSON.parse(
-        JSON.stringify(flattenTree(items))
+        JSON.stringify(flattenTree(items ?? []))
       );
       const overIndex = clonedItems.findIndex(({ id }) => id === overId);
       const activeIndex = clonedItems.findIndex(({ id }) => id === activeId);
@@ -420,7 +429,8 @@ export function SortableTree({
         } else {
           let previousSibling: FlattenedItem | undefined = previousItem;
           while (previousSibling && projected.depth < previousSibling.depth) {
-            const parentId: UniqueIdentifier | null = previousSibling.parentId;
+            const parentId: UniqueIdentifier | null | undefined =
+              previousSibling.parentId;
             previousSibling = sortedItems.find(({ id }) => id === parentId);
           }
 
