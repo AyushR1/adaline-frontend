@@ -1,50 +1,66 @@
-# React + TypeScript + Vite
+# Realtime Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+This repository contains the frontend code for a realtime web application built using **React** and **TypeScript**. The application allows users to manage a collection of items with all the features mentioned in the challenge:
 
-Currently, two official plugins are available:
+## Extra Features added apart from orignal challenge
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. **Drag and Drop**
+   - Items and folders can be reordered via drag-and-drop functionality.
+   - Items and folders can be moved between folders or out to the main page.
 
-## Expanding the ESLint configuration
+2. **Highly Scalable**
+   - Uses Pub-Sub architecutre on the backend.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
 
-- Configure the top-level `parserOptions` property like this:
+---
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Tech Stack
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+- **Frontend:** React, TypeScript
+- **Backend:** Node.js, Redis (Pub-Sub) 
+- **Real-Time Communication:** WebSocket
+- **Database:** Postgres 
+- **Styling:** Tailwind CSS, ShadCN components
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+---
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## Setup Instructions
+
+Follow these steps to set up and run the frontend application locally:
+
+### Prerequisites
+
+Ensure you have the following installed:
+- [Node.js](https://nodejs.org/) 
+- [npm](https://www.npmjs.com/) 
+
+### Steps
+
+1. **Clone the Repository**
+
+2. **Install Dependencies**
+
+   Use npm to install all required packages:
+
+   ```bash
+   npm install
+   ```
+
+
+3. **Start the Development Server**
+
+   Start the app in development mode:
+
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## Usage
+
+- Use the app interface to add, group, reorder, and manage items.
+- Changes will persist and synchronize across sessions in real time.
+
+---

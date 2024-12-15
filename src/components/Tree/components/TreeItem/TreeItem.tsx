@@ -43,6 +43,9 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
     },
     ref
   ) => {
+    if (props.icon == null || props.icon == undefined) {
+      props.icon = 'folder';
+    }
     return (
       <li
         className={classNames(
