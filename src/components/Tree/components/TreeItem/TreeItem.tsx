@@ -68,7 +68,6 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
           <span  className={styles.Text}>
             {' '}
              {props.name}
-             {props.order}
           </span>
           {!clone && onRemove && (
             <Remove className="bg-white" onClick={onRemove} />
