@@ -77,6 +77,7 @@ interface Props {
   indicator?: boolean;
   removable?: boolean;
   onMoveItem: (sourceIndex: number, destinationIndex: number | null, newOrder: number) => void;
+  onEditItem: (itemId: string, collapsed: boolean) => void;
 }
 function sortTreeItems(items: TreeItem[]): TreeItem[] {
   return items
@@ -92,6 +93,7 @@ export function SortableTree({
   collapsible,
   defaultItems,
   onMoveItem,
+  onEditItem,
   indicator = false,
   indentationWidth = 50,
   removable,
@@ -327,13 +329,14 @@ export function SortableTree({
     setItems((items) => removeItem(items, id));
   }
 
-  function handleCollapse(id: UniqueIdentifier) {
-    setItems((items) =>
-      setProperty(items, id, 'collapsed', (value) => {
-        return !value;
-      })
-    );
-  }
+
+  function handleCollapse(id) {
+    flattenedItems.forEach((item) => {
+      if (item.id === id) {
+        const newValue = !item.collapsed;
+        onEditItem(id, newValue);
+      }
+  })}
 
   function getMovementAnnouncement(
     eventName: string,

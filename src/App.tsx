@@ -59,6 +59,9 @@ function App() {
         case 'move_item':
           handleMoveItemhelper(message.itemId, message.folderId, message.newOrder);
           break;
+        case 'edit_item':
+          handleEditItemhelper(message.itemId, message.collapsed);
+          break;
         default:
           console.error('Unknown message type', message);
       }
@@ -99,6 +102,34 @@ function App() {
     }
   };
 
+  const handleEditItemhelper = (itemId: string, collapsed: boolean) => {
+    console.log("edit_item", itemId, collapsed);
+  
+    const updateItem = (items: TreeItem[]): TreeItem[] => {
+      return items.map((item) => {
+        // If this item's ID matches, update its 'collapsed' value
+        if (item.id === itemId) {
+          return { ...item, collapsed };
+        }
+  
+        // If this item has children, recursively update them
+        if (item.children && item.children.length > 0) {
+          return { ...item, children: updateItem(item.children) };
+        }
+  
+        // Return the item unchanged if no updates are needed
+        return item;
+      });
+    };
+  
+    // Update the state
+    setItems((prevItems) => {
+      const updatedItems = updateItem(prevItems);
+      console.log("items", updatedItems);
+      return updatedItems;
+    });
+  };
+  
 const handleMoveItemhelper = (
   itemId: string,
   folderId: string | null,
@@ -201,6 +232,19 @@ const handleMoveItemhelper = (
     }
   };
 
+  const handleEditItem = (itemId: string, collapsed: boolean) => {
+    if (ws) {
+      ws.send(
+        JSON.stringify({
+          type: 'edit_item',
+          userId,
+          itemId,
+          collapsed,
+        })
+      );
+    }
+  }
+
   return (
     <div className="flex justify-center items-start min-h-screen pt-10">
       <div className="max-w-2xl space-y-6">
@@ -210,6 +254,7 @@ const handleMoveItemhelper = (
         <ItemList
           items={items}
           onMoveItem={handleMoveItem}
+          onEditItem={handleEditItem}
         />
       </div>
     </div>

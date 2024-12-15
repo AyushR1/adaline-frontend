@@ -17,16 +17,17 @@ const Wrapper = ({children}: {children: React.ReactNode}) => (
 
 export const ItemList: React.FC<{
   items:TreeItem[],
+  onEditItem: (itemId: string, collapsed:boolean) => void;
   onMoveItem: (
     itemId: string,
     folderId: string | null,
     newOrder: number | null,
-    nested_order: number | null
   ) => void;
-}> = ({ items, onMoveItem }) => {
+  
+}> = ({ items,onEditItem, onMoveItem }) => {
   return (
     <Wrapper>
-    <SortableTree collapsible defaultItems={items} onMoveItem={onMoveItem} />
+    <SortableTree collapsible defaultItems={items} onEditItem={onEditItem} onMoveItem={onMoveItem}  />
   </Wrapper>
   );
 };
